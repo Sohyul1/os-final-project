@@ -9,7 +9,7 @@
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0">
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
     <meta
         http-equiv="X-UA-Compatible"
@@ -41,13 +41,47 @@
 
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
-    {% block content %}
-    {% endblock %}
+    <div class="page-content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Taskbar — always present, on every page -->
+    <div class="window taskbar">
+
+        <div class="window-body">
+
+            <!-- Start Button — confirms before returning to the desktop -->
+            <button id="start-button" class="start-button" type="button">
+                <svg class="win-logo" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M1 2.6 L7.2 1.7 L7.2 7.6 L1 7.6 Z" fill="#FF3333"/>
+                    <path d="M7.9 1.6 L15 0.6 L15 7.5 L7.9 7.5 Z" fill="#7CBB00"/>
+                    <path d="M1 8.3 L7.2 8.3 L7.2 14.2 L1 13.3 Z" fill="#00A4EF"/>
+                    <path d="M7.9 8.4 L15 8.4 L15 15.3 L7.9 14.3 Z" fill="#FFD500"/>
+                </svg>
+                Start
+            </button>
+
+            <!-- Open app buttons -->
+            <div id="taskbar-apps" class="taskbar-apps"></div>
+
+            <!-- Clock -->
+            <div class="taskbar-right">
+                <div id="clock" class="taskbar-clock">12:00 PM</div>
+            </div>
+
+        </div>
+
+    </div>
 
     <!-- Global Windows 95 JavaScript -->
     <script src="{% static 'js/windows95.js' %}"></script>
+
+    <!-- Per-page taskbar registration (e.g. addTaskbarApp(...)) -->
+    {% block taskbar_register %}
+    {% endblock %}
 
     <!-- Page-specific JavaScript -->
     {% block extra_js %}

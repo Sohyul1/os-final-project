@@ -1,15 +1,31 @@
 /* cpu_scheduling/static/js/cpu-form.js */
 
 function toggleFields() {
-    var algo = document.getElementById("algorithm").value;
+    var algoEl = document.getElementById("algorithm");
+    if (!algoEl) return;
+
+    var algo = algoEl.value;
     var needsPriority = ["priority_np", "priority_p"];
     var needsQuantum = ["rr"];
 
-    document.getElementById("priority-field").style.display =
-        needsPriority.indexOf(algo) !== -1 ? "block" : "none";
-    document.getElementById("quantum-field").style.display =
-        needsQuantum.indexOf(algo) !== -1 ? "block" : "none";
+    var priorityField = document.getElementById("priority-field");
+    var quantumField = document.getElementById("quantum-field");
+
+    if (priorityField) {
+        priorityField.style.display = needsPriority.indexOf(algo) !== -1 ? "block" : "none";
+    }
+    if (quantumField) {
+        quantumField.style.display = needsQuantum.indexOf(algo) !== -1 ? "block" : "none";
+    }
 }
 
-// Run on page load
-toggleFields();
+document.addEventListener("DOMContentLoaded", function () {
+    var algoEl = document.getElementById("algorithm");
+    if (!algoEl) return;
+
+    algoEl.addEventListener("change", toggleFields);
+    algoEl.addEventListener("input", toggleFields);
+
+    // Run once on load so the correct fields show for the current/selected value
+    toggleFields();
+});

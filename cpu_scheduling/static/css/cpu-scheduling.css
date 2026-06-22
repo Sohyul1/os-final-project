@@ -7,10 +7,11 @@
 ================================= */
 
 .cpu-page {
-    padding: 20px;
-    padding-bottom: 50px; /* clear taskbar */
+    padding: 12px;
     box-sizing: border-box;
-    min-height: calc(100vh - 30px);
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
 }
 
 
@@ -22,6 +23,7 @@
     width: 100%;
     max-width: 960px;
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
 .cpu-window .title-bar-text::before {
@@ -39,6 +41,7 @@
 
 .cpu-section .window-body {
     padding: 12px 14px;
+    box-sizing: border-box;
 }
 
 
@@ -65,7 +68,7 @@
     font-size: 11px;
     padding: 2px 4px;
     width: 100%;
-    max-width: 380px;
+    max-width: 100%;
     box-sizing: border-box;
     background: #ffffff;
     border-top: 2px solid #808080;
@@ -106,6 +109,7 @@
     border-left: 2px solid #ffffff;
     border-right: 2px solid #808080;
     border-bottom: 2px solid #808080;
+    box-sizing: border-box;
 }
 
 .cpu-error .error-icon {
@@ -125,8 +129,15 @@
    Results — Stats Table
 ================================= */
 
+.stats-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
 .stats-table {
     width: 100%;
+    min-width: 480px; /* scroll horizontally instead of squeezing on tiny screens */
     border-collapse: collapse;
     font-family: "MS Sans Serif", Arial, sans-serif;
     font-size: 11px;
@@ -182,6 +193,7 @@
     border-bottom: 2px solid #808080;
     font-family: "MS Sans Serif", Arial, sans-serif;
     font-size: 11px;
+    box-sizing: border-box;
 }
 
 .averages-box .avg-item {
@@ -199,6 +211,7 @@
 ================================= */
 
 .gantt-wrapper {
+    width: 100%;
     overflow-x: auto;
     padding: 4px 0;
     background: #ffffff;
@@ -206,8 +219,39 @@
     border-left: 2px solid #808080;
     border-right: 2px solid #ffffff;
     border-bottom: 2px solid #ffffff;
+    box-sizing: border-box;
 }
 
 #ganttChart {
     display: block;
+    width: 100% !important;
+    min-height: 220px;
+}
+
+
+/* =================================
+   Responsive — small screens / mobile
+================================= */
+
+@media (max-width: 600px) {
+
+    .cpu-section .window-body {
+        padding: 8px 10px;
+    }
+
+    .stats-table {
+        font-size: 10px;
+        min-width: 420px;
+    }
+
+    .stats-table thead th,
+    .stats-table tbody td {
+        padding: 3px 5px;
+    }
+
+    .averages-box {
+        flex-direction: column;
+        gap: 6px;
+    }
+
 }
