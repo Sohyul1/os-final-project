@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% block title %}Memory Management{% endblock %}
+{% block head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+{% block content %}
+<h2>Memory Management Simulator</h2>
+
+<h2>Input</h2>
+<form method="POST">
+{% csrf_token %}
+
+<label for="algorithm">Algorithm:</label><br>
+<select name="algorithm" id="algorithm">
+{% for key, label in algorithms.items %}
+<option value="{{ key }}" {% if form.algorithm == key %}selected{% endif %}>{{ label }}</option>
+{% endfor %}
+</select>
+<br><br>
+
+<label>Memory Block Sizes in KB (comma-separated, e.g. 100,500,200,300,600):</label><br>
+<input type="text" name="block_sizes" value="{{ form.block_sizes|default:'100,500,200,300,600' }}" size="50">
+<br><br>
+
+<label>Process Names (comma-separated, e.g. P1,P2,P3,P4):</label><br>
+<input type="text" name="process_names" value="{{ form.process_names|default:'P1,P2,P3,P4' }}" size="50">
+<br><br>
+
+<label>Process Sizes in KB (comma-separated, e.g. 212,417,112,426):</label><br>
+<input type="text" name="process_sizes" value="{{ form.process_sizes|default:'212,417,112,426' }}" size="50">
+<br><br>
+
+<label>
+<input type="checkbox" name="compaction" {% if form.compaction %}checked{% endif %}>
+Enable Compaction (merge free fragments and retry unallocated processes)
+</label>
+<br><br>
+
+<input type="submit" value="Run Algorithm">
+</form>
+
+<hr>
+
+{% if error %}
+<p><strong>Error:</strong> {{ error }}</p>
+{% endif %}
+
+{% if result %}
+<h2>Results: {{ result.algo_name }}{% if result.compaction_applied %} (with Compaction){% endif %}</h2>
+
+<table border="1" cellpadding="5">
+<tr><th>Total Memory</th><td>{{ result.total_memory }} KB</td></tr>
+<tr><th>Used Memory</th><td>{{ result.used_memory }} KB</td></tr>
+<tr><th>Free Memory</th><td>{{ result.free_memory }} KB</td></tr>
+<tr><th>External Fragmentation</th><td>{{ result.external_fragmentation }} KB</td></tr>
+<tr>
+<th>Compaction Applied</th>
+<td>
+{% if result.compaction_applied %}
+Yes
+{% else %}
+No
+{% endif %}
+</td>
+</tr>
+</table>
+<br>
+
+<h3>Allocation Table</h3>
+<table border="1" cellpadding="5">
+<thead>
+<tr>
+<th>Process</th>
+<th>Size (KB)</th>
+<th>Allocated?</th>
+<th>Block ID</th>
+<th>Block Start Address</th>
+</tr>
+</thead>
+<tbody>
+{% for row in result.allocation_table %}
+<tr>
+<td>{{ row.pid }}</td>
+<td>{{ row.size }}</td>
+<td>
+{% if row.allocated %}
+Yes
+{% else %}
+<strong>No (Not allocated)</strong>
+{% endif %}
+</td>
+<td>
+{% if row.block_id is not None %}
+{{ row.block_id }}
+{% else %}
+&mdash;
+{% endif %}
+</td>
+<td>
+{% if row.block_start is not None %}
+{{ row.block_start }} KB
+{% else %}
+&mdash;
+{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% if result.unallocated %}
+<p><strong>Unallocated processes:</strong> {{ result.unallocated|join:", " }}</p>
+{% endif %}
+
+<h3>Memory Block Diagram</h3>
+<div id="mem-chart-data"
+     data-datasets="{{ result.chart_datasets_json }}"
+     data-labels="{{ result.chart_labels_json }}"
+     style="display:none;">
+</div>
+
+<canvas id="memoryChart" width="900" height="120"></canvas>
+
+<script>
+(function () {
+var el = document.getElementById("mem-chart-data");
+var datasets = JSON.parse(el.getAttribute("data-datasets"));
+var labels = JSON.parse(el.getAttribute("data-labels"));
+
+var chartDatasets = datasets.map(function (ds) {
+    return {
+        label: ds.label,
+        data: ds.data,
+        backgroundColor: ds.backgroundColor,
+        borderColor: ds.borderColor,
+        borderWidth: ds.borderWidth,
+        segStart: ds.segment_start,
+        segSize: ds.segment_size,
+        segLabel: ds.segment_label,
+    };
+});
+
+new Chart(document.getElementById("memoryChart"), {
+    type: "bar",
+    data: {
+        labels: labels,
+        datasets: chartDatasets,
+    },
+    options: {
+        indexAxis: "y",
+        responsive: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: function (ctx) {
+                        var ds = ctx.dataset;
+                        return ds.segLabel + " | Start: " + ds.segStart + " KB | Size: " + ds.segSize + " KB";
+                    },
+                },
+            },
+        },
+        scales: {
+            x: {
+                stacked: true,
+                title: { display: true, text: "Memory Address (KB)" },
+                beginAtZero: true,
+            },
+            y: { stacked: true },
+        },
+    },
+    plugins: [{
+        id: "segmentLabels",
+        afterDatasetsDraw: function (chart) {
+            var ctx2 = chart.ctx;
+            chart.data.datasets.forEach(function (ds, i) {
+                var meta = chart.getDatasetMeta(i);
+                if (!meta.hidden && meta.data.length > 0) {
+                    var bar = meta.data[0];
+                    var barWidth = bar.width;
+                    if (barWidth > 30) {
+                        ctx2.save();
+                        ctx2.fillStyle = "#000";
+                        ctx2.font = "11px sans-serif";
+                        ctx2.textAlign = "center";
+                        ctx2.textBaseline = "middle";
+                        ctx2.fillText(ds.segLabel, bar.x - barWidth / 2, bar.y);
+                        ctx2.restore();
+                    }
+                }
+            });
+        },
+    }],
+});
+})();
+</script>
+
+<h3>Memory Segment Detail</h3>
+<table border="1" cellpadding="5">
+<thead>
+<tr>
+<th>Segment</th>
+<th>Type</th>
+<th>Start (KB)</th>
+<th>Size (KB)</th>
+<th>End (KB)</th>
+</tr>
+</thead>
+<tbody>
+{% for seg in result.segments %}
+<tr>
+<td>{{ seg.label }}</td>
+<td>{{ seg.type }}</td>
+<td>{{ seg.start }}</td>
+<td>{{ seg.size }}</td>
+<td>{{ seg.start|add:seg.size }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% endif %}
+{% endblock %}

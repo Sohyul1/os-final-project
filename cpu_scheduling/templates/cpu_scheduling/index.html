@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% block title %}CPU Scheduling{% endblock %}
+{% block head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+{% block content %}
+<h2>CPU Scheduling Simulator</h2>
+
+<h2>Input</h2>
+<form method="POST">
+    {% csrf_token %}
+
+    <label for="algorithm">Algorithm:</label><br />
+    <select name="algorithm" id="algorithm" onchange="toggleFields()">
+        {% for key, label in algorithms.items %}
+        <option
+            value="{{ key }}"
+            {%
+            if
+            form.algorithm=""
+            ="key"
+            %}selected{%
+            endif
+            %}
+        >
+            {{ label }}
+        </option>
+        {% endfor %}
+    </select>
+    <br /><br />
+
+    <label>Process IDs (comma-separated, e.g. P1,P2,P3):</label><br />
+    <input
+        type="text"
+        name="pids"
+        value="{{ form.pids|default:'P1,P2,P3' }}"
+        size="40"
+    />
+    <br /><br />
+
+    <label>Arrival Times (comma-separated):</label><br />
+    <input
+        type="text"
+        name="arrivals"
+        value="{{ form.arrivals|default:'0,1,2' }}"
+        size="40"
+    />
+    <br /><br />
+
+    <label>Burst Times (comma-separated):</label><br />
+    <input
+        type="text"
+        name="bursts"
+        value="{{ form.bursts|default:'5,3,8' }}"
+        size="40"
+    />
+    <br /><br />
+
+    <div id="priority-field">
+        <label>Priorities (comma-separated, lower = higher priority):</label
+        ><br />
+        <input
+            type="text"
+            name="priorities"
+            value="{{ form.priorities|default:'1,2,3' }}"
+            size="40"
+        />
+        <br /><br />
+    </div>
+
+    <div id="quantum-field">
+        <label>Time Quantum (for Round Robin):</label><br />
+        <input
+            type="number"
+            name="quantum"
+            value="{{ form.quantum|default:2 }}"
+            min="1"
+        />
+        <br /><br />
+    </div>
+
+    <input type="submit" value="Run Algorithm" />
+</form>
+
+<script>
+    function toggleFields() {
+        var algo = document.getElementById("algorithm").value;
+        var needsPriority = ["priority_np", "priority_p"];
+        var needsQuantum = ["rr"];
+
+        document.getElementById("priority-field").style.display =
+            needsPriority.indexOf(algo) !== -1 ? "block" : "none";
+        document.getElementById("quantum-field").style.display =
+            needsQuantum.indexOf(algo) !== -1 ? "block" : "none";
+    }
+    toggleFields();
+</script>
+
+<hr />
+
+{% if error %}
+<p><strong>Error:</strong> {{ error }}</p>
+{% endif %} {% if result %}
+<h2>Results: {{ result.algorithm_name }}</h2>
+
+<!-- ── STATS TABLE ─────────────────────────────────── -->
+<h3>Per-Process Statistics</h3>
+<table border="1" cellpadding="5">
+    <thead>
+        <tr>
+            <th>PID</th>
+            <th>Arrival</th>
+            <th>Burst</th>
+            <th>Finish</th>
+            <th>Turnaround</th>
+            <th>Waiting</th>
+            <th>Response</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in result.stats %}
+        <tr>
+            <td>{{ s.pid }}</td>
+            <td>{{ s.arrival }}</td>
+            <td>{{ s.burst }}</td>
+            <td>{{ s.finish }}</td>
+            <td>{{ s.turnaround }}</td>
+            <td>{{ s.waiting }}</td>
+            <td>{{ s.response }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<br />
+<strong>Average Waiting Time:</strong> {{ result.avg_waiting }}<br />
+<strong>Average Turnaround Time:</strong> {{ result.avg_turnaround }}<br />
+<strong>Average Response Time:</strong> {{ result.avg_response }}<br />
+
+<!-- ── GANTT CHART ─────────────────────────────────── -->
+<h3>Gantt Chart</h3>
+
+<div
+    id="chart-data"
+    data-gantt="{{ result.gantt_data_json }}"
+    data-pids="{{ result.unique_pids_json }}"
+    style="display: none"
+></div>
+
+<canvas id="ganttChart" width="900" height="200"></canvas>
+
+<script>
+    (function () {
+        var el = document.getElementById("chart-data");
+        var ganttData = JSON.parse(el.getAttribute("data-gantt"));
+        var uniquePids = JSON.parse(el.getAttribute("data-pids"));
+
+        var palette = [
+            "#4e79a7",
+            "#f28e2b",
+            "#e15759",
+            "#76b7b2",
+            "#59a14f",
+            "#edc948",
+            "#b07aa1",
+            "#ff9da7",
+            "#9c755f",
+            "#bab0ac",
+        ];
+
+        var colorMap = {};
+        uniquePids.forEach(function (pid, i) {
+            colorMap[pid] = palette[i % palette.length];
+        });
+
+        var labels = ganttData.map(function (_, i) {
+            return "#" + (i + 1);
+        });
+        var offsets = ganttData.map(function (d) {
+            return d.start;
+        });
+        var durations = ganttData.map(function (d) {
+            return d.duration;
+        });
+        var bgColors = ganttData.map(function (d) {
+            return colorMap[d.pid];
+        });
+        var pidLabels = ganttData.map(function (d) {
+            return d.pid;
+        });
+
+        new Chart(document.getElementById("ganttChart"), {
+            type: "bar",
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Offset",
+                        data: offsets,
+                        backgroundColor: "rgba(0,0,0,0)",
+                        borderWidth: 0,
+                    },
+                    {
+                        label: "Execution",
+                        data: durations,
+                        backgroundColor: bgColors,
+                        borderColor: "#333",
+                        borderWidth: 1,
+                    },
+                ],
+            },
+            options: {
+                indexAxis: "y",
+                responsive: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (ctx) {
+                                if (ctx.datasetIndex === 0) {
+                                    return null;
+                                }
+                                var i = ctx.dataIndex;
+                                return (
+                                    pidLabels[i] +
+                                    "  [" +
+                                    offsets[i] +
+                                    " → " +
+                                    (offsets[i] + durations[i]) +
+                                    "]"
+                                );
+                            },
+                        },
+                    },
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        title: { display: true, text: "Time" },
+                        beginAtZero: true,
+                    },
+                    y: {
+                        stacked: true,
+                        title: { display: true, text: "Slot" },
+                    },
+                },
+            },
+            plugins: [
+                {
+                    id: "pidLabels",
+                    afterDatasetsDraw: function (chart) {
+                        var ctx2 = chart.ctx;
+                        var meta = chart.getDatasetMeta(1);
+                        meta.data.forEach(function (bar, i) {
+                            ctx2.save();
+                            ctx2.fillStyle = "#fff";
+                            ctx2.font = "bold 12px sans-serif";
+                            ctx2.textAlign = "center";
+                            ctx2.textBaseline = "middle";
+                            ctx2.fillText(
+                                pidLabels[i],
+                                bar.x - (bar.width / 2 || 0),
+                                bar.y,
+                            );
+                            ctx2.restore();
+                        });
+                    },
+                },
+            ],
+        });
+    })();
+</script>
+
+{% endif %} 
+{% endblock %}

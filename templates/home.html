@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Home — OS Simulator{% endblock %}
+
+{% block content %}
+<h2>Welcome to the OS Simulator</h2>
+<p>Select a module below to begin:</p>
+<ul>
+  <li><a href="/cpu/">CPU Scheduling</a> — FCFS, SJF, Priority, Round Robin</li>
+  <li><a href="/memory/">Memory Management</a> — First Fit, Best Fit, Worst Fit</li>
+  <li><a href="/virtual/">Virtual Memory</a> — FIFO, LRU, Optimal</li>
+  <li><a href="/disk/">Disk Management</a> — FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK</li>
+</ul>
+{% endblock %}
