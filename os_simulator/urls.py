@@ -1,5 +1,5 @@
 """
-URL configuration for config project.
+URL configuration for os_simulator project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/6.0/topics/http/urls/
@@ -14,9 +14,21 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# os_simulator/urls.py
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.shortcuts import render
+
+
+def home(request):
+    return render(request, 'home.html')
+
 
 urlpatterns = [
+    path('', home, name='home'),
     path('admin/', admin.site.urls),
+    path('cpu/', include('cpu_scheduling.urls')),
+    path('memory/', include('memory_management.urls')),
+    path('virtual/', include('virtual_memory.urls')),
+    path('disk/', include('disk_management.urls')),
 ]

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>{% block title %}OS Simulator{% endblock %}</title>
+        {% block head_scripts %}{% endblock %}
+    </head>
+    <body>
+        <h1>OS Simulator</h1>
+
+        <nav>
+            <a href="/">Home</a> | <a href="/cpu/">CPU Scheduling</a> |
+            <a href="/memory/">Memory Management</a> |
+            <a href="/virtual/">Virtual Memory</a> |
+            <a href="/disk/">Disk Management</a>
+        </nav>
+
+        <hr />
+
+        {% block content %}{% endblock %}
+    </body>
+</html>
