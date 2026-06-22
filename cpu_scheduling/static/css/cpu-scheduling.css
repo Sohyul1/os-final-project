@@ -1,0 +1,213 @@
+/* =================================
+   cpu_scheduling/static/css/cpu-scheduling.css
+================================= */
+
+/* =================================
+   Page Layout — sits on the desktop
+================================= */
+
+.cpu-page {
+    padding: 20px;
+    padding-bottom: 50px; /* clear taskbar */
+    box-sizing: border-box;
+    min-height: calc(100vh - 30px);
+}
+
+
+/* =================================
+   Main Window
+================================= */
+
+.cpu-window {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.cpu-window .title-bar-text::before {
+    content: "🖥️ ";
+}
+
+
+/* =================================
+   Section Windows (Input / Results)
+================================= */
+
+.cpu-section {
+    margin-bottom: 12px;
+}
+
+.cpu-section .window-body {
+    padding: 12px 14px;
+}
+
+
+/* =================================
+   Form Fields
+================================= */
+
+.field-row-stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 10px;
+}
+
+.field-row-stacked label {
+    font-size: 11px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+}
+
+.field-row-stacked input[type="text"],
+.field-row-stacked input[type="number"],
+.field-row-stacked select {
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    font-size: 11px;
+    padding: 2px 4px;
+    width: 100%;
+    max-width: 380px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    outline: none;
+}
+
+.field-row-stacked input[type="number"] {
+    max-width: 100px;
+}
+
+.form-submit-row {
+    margin-top: 14px;
+    display: flex;
+    gap: 6px;
+}
+
+#priority-field,
+#quantum-field {
+    display: none; /* toggled by cpu-form.js */
+}
+
+
+/* =================================
+   Error Box
+================================= */
+
+.cpu-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+}
+
+.cpu-error .error-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.cpu-error .error-text {
+    font-size: 11px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    line-height: 1.5;
+}
+
+
+/* =================================
+   Results — Stats Table
+================================= */
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    font-size: 11px;
+    margin-bottom: 10px;
+}
+
+.stats-table thead tr {
+    background: #000080;
+    color: #ffffff;
+}
+
+.stats-table thead th {
+    padding: 4px 8px;
+    text-align: left;
+    font-weight: bold;
+    border: 1px solid #000080;
+    white-space: nowrap;
+}
+
+.stats-table tbody tr {
+    background: #ffffff;
+}
+
+.stats-table tbody tr:nth-child(even) {
+    background: #f0f0f0;
+}
+
+.stats-table tbody td {
+    padding: 3px 8px;
+    border: 1px solid #808080;
+}
+
+.stats-table tbody tr:hover {
+    background: #000080;
+    color: #ffffff;
+}
+
+
+/* =================================
+   Results — Averages
+================================= */
+
+.averages-box {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    font-size: 11px;
+}
+
+.averages-box .avg-item {
+    display: flex;
+    gap: 4px;
+}
+
+.averages-box .avg-label {
+    font-weight: bold;
+}
+
+
+/* =================================
+   Gantt Chart
+================================= */
+
+.gantt-wrapper {
+    overflow-x: auto;
+    padding: 4px 0;
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+}
+
+#ganttChart {
+    display: block;
+}

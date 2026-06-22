@@ -1,275 +1,179 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}CPU Scheduling{% endblock %}
+
 {% block head_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cpu-scheduling.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>CPU Scheduling Simulator</h2>
+<div class="cpu-page">
+<div class="cpu-window window">
 
-<h2>Input</h2>
-<form method="POST">
-    {% csrf_token %}
-
-    <label for="algorithm">Algorithm:</label><br />
-    <select name="algorithm" id="algorithm" onchange="toggleFields()">
-        {% for key, label in algorithms.items %}
-        <option
-            value="{{ key }}"
-            {%
-            if
-            form.algorithm=""
-            ="key"
-            %}selected{%
-            endif
-            %}
-        >
-            {{ label }}
-        </option>
-        {% endfor %}
-    </select>
-    <br /><br />
-
-    <label>Process IDs (comma-separated, e.g. P1,P2,P3):</label><br />
-    <input
-        type="text"
-        name="pids"
-        value="{{ form.pids|default:'P1,P2,P3' }}"
-        size="40"
-    />
-    <br /><br />
-
-    <label>Arrival Times (comma-separated):</label><br />
-    <input
-        type="text"
-        name="arrivals"
-        value="{{ form.arrivals|default:'0,1,2' }}"
-        size="40"
-    />
-    <br /><br />
-
-    <label>Burst Times (comma-separated):</label><br />
-    <input
-        type="text"
-        name="bursts"
-        value="{{ form.bursts|default:'5,3,8' }}"
-        size="40"
-    />
-    <br /><br />
-
-    <div id="priority-field">
-        <label>Priorities (comma-separated, lower = higher priority):</label
-        ><br />
-        <input
-            type="text"
-            name="priorities"
-            value="{{ form.priorities|default:'1,2,3' }}"
-            size="40"
-        />
-        <br /><br />
+    <!-- Title Bar -->
+    <div class="title-bar">
+        <div class="title-bar-text">CPU Scheduling Simulator</div>
+        <div class="title-bar-controls">
+            <button aria-label="Minimize"></button>
+            <button aria-label="Maximize"></button>
+            <button aria-label="Close"></button>
+        </div>
     </div>
 
-    <div id="quantum-field">
-        <label>Time Quantum (for Round Robin):</label><br />
-        <input
-            type="number"
-            name="quantum"
-            value="{{ form.quantum|default:2 }}"
-            min="1"
-        />
-        <br /><br />
-    </div>
+    <div class="window-body">
 
-    <input type="submit" value="Run Algorithm" />
-</form>
+        <!-- ── INPUT SECTION ───────────────────────────── -->
+        <div class="cpu-section window">
+            <div class="title-bar">
+                <div class="title-bar-text">Input</div>
+            </div>
+            <div class="window-body">
+                <form method="POST">
+                    {% csrf_token %}
 
-<script>
-    function toggleFields() {
-        var algo = document.getElementById("algorithm").value;
-        var needsPriority = ["priority_np", "priority_p"];
-        var needsQuantum = ["rr"];
+                    <div class="field-row-stacked">
+                        <label for="algorithm">Algorithm:</label>
+                        <select name="algorithm" id="algorithm" onchange="toggleFields()">
+                            {% for key, label in algorithms.items %}
+                            <option value="{{ key }}" {% if form.algorithm == key %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-        document.getElementById("priority-field").style.display =
-            needsPriority.indexOf(algo) !== -1 ? "block" : "none";
-        document.getElementById("quantum-field").style.display =
-            needsQuantum.indexOf(algo) !== -1 ? "block" : "none";
-    }
-    toggleFields();
-</script>
+                    <div class="field-row-stacked">
+                        <label>Process IDs (comma-separated, e.g. P1,P2,P3):</label>
+                        <input type="text" name="pids" value="{{ form.pids|default:'P1,P2,P3' }}" />
+                    </div>
 
-<hr />
+                    <div class="field-row-stacked">
+                        <label>Arrival Times (comma-separated):</label>
+                        <input type="text" name="arrivals" value="{{ form.arrivals|default:'0,1,2' }}" />
+                    </div>
 
-{% if error %}
-<p><strong>Error:</strong> {{ error }}</p>
-{% endif %} {% if result %}
-<h2>Results: {{ result.algorithm_name }}</h2>
+                    <div class="field-row-stacked">
+                        <label>Burst Times (comma-separated):</label>
+                        <input type="text" name="bursts" value="{{ form.bursts|default:'5,3,8' }}" />
+                    </div>
 
-<!-- ── STATS TABLE ─────────────────────────────────── -->
-<h3>Per-Process Statistics</h3>
-<table border="1" cellpadding="5">
-    <thead>
-        <tr>
-            <th>PID</th>
-            <th>Arrival</th>
-            <th>Burst</th>
-            <th>Finish</th>
-            <th>Turnaround</th>
-            <th>Waiting</th>
-            <th>Response</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for s in result.stats %}
-        <tr>
-            <td>{{ s.pid }}</td>
-            <td>{{ s.arrival }}</td>
-            <td>{{ s.burst }}</td>
-            <td>{{ s.finish }}</td>
-            <td>{{ s.turnaround }}</td>
-            <td>{{ s.waiting }}</td>
-            <td>{{ s.response }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                    <div id="priority-field" class="field-row-stacked">
+                        <label>Priorities (comma-separated, lower = higher priority):</label>
+                        <input type="text" name="priorities" value="{{ form.priorities|default:'1,2,3' }}" />
+                    </div>
 
-<br />
-<strong>Average Waiting Time:</strong> {{ result.avg_waiting }}<br />
-<strong>Average Turnaround Time:</strong> {{ result.avg_turnaround }}<br />
-<strong>Average Response Time:</strong> {{ result.avg_response }}<br />
+                    <div id="quantum-field" class="field-row-stacked">
+                        <label>Time Quantum (for Round Robin):</label>
+                        <input type="number" name="quantum" value="{{ form.quantum|default:2 }}" min="1" />
+                    </div>
 
-<!-- ── GANTT CHART ─────────────────────────────────── -->
-<h3>Gantt Chart</h3>
+                    <div class="form-submit-row">
+                        <button type="submit">▶ Run Algorithm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-<div
-    id="chart-data"
-    data-gantt="{{ result.gantt_data_json }}"
-    data-pids="{{ result.unique_pids_json }}"
-    style="display: none"
-></div>
+        <!-- ── ERROR ───────────────────────────────────── -->
+        {% if error %}
+        <div class="cpu-error">
+            <div class="error-icon">⚠️</div>
+            <div class="error-text"><strong>Error:</strong> {{ error }}</div>
+        </div>
+        {% endif %}
 
-<canvas id="ganttChart" width="900" height="200"></canvas>
+        <!-- ── RESULTS SECTION ─────────────────────────── -->
+        {% if result %}
+        <div class="cpu-section window">
+            <div class="title-bar">
+                <div class="title-bar-text">Results — {{ result.algorithm_name }}</div>
+            </div>
+            <div class="window-body">
 
-<script>
-    (function () {
-        var el = document.getElementById("chart-data");
-        var ganttData = JSON.parse(el.getAttribute("data-gantt"));
-        var uniquePids = JSON.parse(el.getAttribute("data-pids"));
+                <!-- Stats Table -->
+                <div class="cpu-section window">
+                    <div class="title-bar">
+                        <div class="title-bar-text">Per-Process Statistics</div>
+                    </div>
+                    <div class="window-body">
+                        <table class="stats-table">
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>Arrival</th>
+                                    <th>Burst</th>
+                                    <th>Finish</th>
+                                    <th>Turnaround</th>
+                                    <th>Waiting</th>
+                                    <th>Response</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in result.stats %}
+                                <tr>
+                                    <td>{{ s.pid }}</td>
+                                    <td>{{ s.arrival }}</td>
+                                    <td>{{ s.burst }}</td>
+                                    <td>{{ s.finish }}</td>
+                                    <td>{{ s.turnaround }}</td>
+                                    <td>{{ s.waiting }}</td>
+                                    <td>{{ s.response }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
 
-        var palette = [
-            "#4e79a7",
-            "#f28e2b",
-            "#e15759",
-            "#76b7b2",
-            "#59a14f",
-            "#edc948",
-            "#b07aa1",
-            "#ff9da7",
-            "#9c755f",
-            "#bab0ac",
-        ];
+                        <div class="averages-box">
+                            <div class="avg-item">
+                                <span class="avg-label">Avg Waiting:</span>
+                                <span>{{ result.avg_waiting }}</span>
+                            </div>
+                            <div class="avg-item">
+                                <span class="avg-label">Avg Turnaround:</span>
+                                <span>{{ result.avg_turnaround }}</span>
+                            </div>
+                            <div class="avg-item">
+                                <span class="avg-label">Avg Response:</span>
+                                <span>{{ result.avg_response }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        var colorMap = {};
-        uniquePids.forEach(function (pid, i) {
-            colorMap[pid] = palette[i % palette.length];
-        });
+                <!-- Gantt Chart -->
+                <div class="cpu-section window">
+                    <div class="title-bar">
+                        <div class="title-bar-text">Gantt Chart</div>
+                    </div>
+                    <div class="window-body">
+                        <div
+                            id="chart-data"
+                            data-gantt="{{ result.gantt_data_json }}"
+                            data-pids="{{ result.unique_pids_json }}"
+                            style="display:none"
+                        ></div>
+                        <div class="gantt-wrapper">
+                            <canvas id="ganttChart" width="900" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
 
-        var labels = ganttData.map(function (_, i) {
-            return "#" + (i + 1);
-        });
-        var offsets = ganttData.map(function (d) {
-            return d.start;
-        });
-        var durations = ganttData.map(function (d) {
-            return d.duration;
-        });
-        var bgColors = ganttData.map(function (d) {
-            return colorMap[d.pid];
-        });
-        var pidLabels = ganttData.map(function (d) {
-            return d.pid;
-        });
+            </div>
+        </div>
+        {% endif %}
 
-        new Chart(document.getElementById("ganttChart"), {
-            type: "bar",
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: "Offset",
-                        data: offsets,
-                        backgroundColor: "rgba(0,0,0,0)",
-                        borderWidth: 0,
-                    },
-                    {
-                        label: "Execution",
-                        data: durations,
-                        backgroundColor: bgColors,
-                        borderColor: "#333",
-                        borderWidth: 1,
-                    },
-                ],
-            },
-            options: {
-                indexAxis: "y",
-                responsive: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                if (ctx.datasetIndex === 0) {
-                                    return null;
-                                }
-                                var i = ctx.dataIndex;
-                                return (
-                                    pidLabels[i] +
-                                    "  [" +
-                                    offsets[i] +
-                                    " → " +
-                                    (offsets[i] + durations[i]) +
-                                    "]"
-                                );
-                            },
-                        },
-                    },
-                },
-                scales: {
-                    x: {
-                        stacked: true,
-                        title: { display: true, text: "Time" },
-                        beginAtZero: true,
-                    },
-                    y: {
-                        stacked: true,
-                        title: { display: true, text: "Slot" },
-                    },
-                },
-            },
-            plugins: [
-                {
-                    id: "pidLabels",
-                    afterDatasetsDraw: function (chart) {
-                        var ctx2 = chart.ctx;
-                        var meta = chart.getDatasetMeta(1);
-                        meta.data.forEach(function (bar, i) {
-                            ctx2.save();
-                            ctx2.fillStyle = "#fff";
-                            ctx2.font = "bold 12px sans-serif";
-                            ctx2.textAlign = "center";
-                            ctx2.textBaseline = "middle";
-                            ctx2.fillText(
-                                pidLabels[i],
-                                bar.x - (bar.width / 2 || 0),
-                                bar.y,
-                            );
-                            ctx2.restore();
-                        });
-                    },
-                },
-            ],
-        });
-    })();
-</script>
+    </div><!-- /window-body -->
+</div><!-- /cpu-window -->
+</div><!-- /cpu-page -->
+{% endblock %}
 
-{% endif %} 
+{% block extra_js %}
+<script src="{% static 'js/cpu-form.js' %}"></script>
+{% if result %}
+<script src="{% static 'js/gantt-chart.js' %}"></script>
+{% endif %}
 {% endblock %}

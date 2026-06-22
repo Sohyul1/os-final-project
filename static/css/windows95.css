@@ -1,0 +1,251 @@
+/* =================================
+   Global
+================================= */
+
+body {
+    margin: 0;
+    background: #008080;
+    min-height: 100vh;
+    overflow: clip;
+    padding-bottom: 30px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    font-size: 11px;
+}
+
+
+/* =================================
+   Desktop
+================================= */
+
+.desktop {
+    height: calc(100vh - 30px);
+    padding: 15px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.desktop-icons {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 20px;
+    max-height: calc(100vh - 60px);
+    align-content: flex-start;
+}
+
+.desktop-icon {
+    width: 80px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    padding: 4px;
+    user-select: none;
+    cursor: default;
+    border: 1px solid transparent;
+}
+
+.desktop-icon img {
+    width: 48px;
+    height: 48px;
+    image-rendering: pixelated;
+    display: block;
+    margin: 0 auto 4px;
+}
+
+.desktop-icon div {
+    font-size: 11px;
+    color: white;
+    word-break: break-word;
+    line-height: 1.3;
+    text-shadow: 1px 1px 1px #000000;
+}
+
+.desktop-icon:hover {
+    background: rgba(0, 0, 128, 0.4);
+    border: 1px dotted white;
+}
+
+.desktop-icon.selected {
+    background: #000080;
+    border: 1px dotted white;
+}
+
+.desktop-icon.selected div {
+    color: white;
+}
+
+
+/* =================================
+   Start Menu (Coming Soon Modal)
+================================= */
+
+.start-menu-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+}
+
+.start-menu-overlay.show {
+    display: block;
+}
+
+.coming-soon-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    z-index: 10001;
+}
+
+.coming-soon-dialog .title-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.coming-soon-body {
+    text-align: center;
+    padding: 24px 20px 16px;
+}
+
+.coming-soon-body .cs-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.coming-soon-body h2 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+}
+
+.coming-soon-body p {
+    margin: 0 0 16px;
+    font-size: 11px;
+    color: #444;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+}
+
+.coming-soon-body .cs-ok-btn {
+    min-width: 80px;
+}
+
+
+/* =================================
+   Taskbar
+================================= */
+
+.taskbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    margin: 0;
+    z-index: 9999;
+    box-sizing: border-box;
+}
+
+/* Override 98.css window-body padding inside taskbar */
+.taskbar.window > .window-body {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 2px 4px !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+    gap: 4px;
+}
+
+.start-button {
+    height: 22px;
+    min-width: 75px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-weight: bold;
+    font-size: 11px;
+    flex-shrink: 0;
+    padding: 0 6px !important;
+}
+
+.start-button .win-logo {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+/* Taskbar open app buttons */
+.taskbar-apps {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex: 1;
+    overflow: hidden;
+    height: 22px;
+}
+
+.taskbar-app-btn {
+    height: 22px;
+    min-width: 100px;
+    max-width: 160px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 0 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    box-sizing: border-box;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    cursor: default;
+}
+
+.taskbar-app-btn:active,
+.taskbar-app-btn.active {
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    background: #c0c0c0;
+}
+
+.taskbar-app-btn img {
+    width: 14px;
+    height: 14px;
+    image-rendering: pixelated;
+    flex-shrink: 0;
+}
+
+.taskbar-right {
+    display: flex;
+    align-items: center;
+    height: 22px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.taskbar-clock {
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    font-size: 11px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    background: #c0c0c0;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    box-sizing: border-box;
+    white-space: nowrap;
+}

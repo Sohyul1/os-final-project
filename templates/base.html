@@ -1,22 +1,58 @@
-<!doctype html>
+{% load static %}
+
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>{% block title %}OS Simulator{% endblock %}</title>
-        {% block head_scripts %}{% endblock %}
-    </head>
-    <body>
-        <h1>OS Simulator</h1>
 
-        <nav>
-            <a href="/">Home</a> | <a href="/cpu/">CPU Scheduling</a> |
-            <a href="/memory/">Memory Management</a> |
-            <a href="/virtual/">Virtual Memory</a> |
-            <a href="/disk/">Disk Management</a>
-        </nav>
+<head>
 
-        <hr />
+    <meta charset="UTF-8">
 
-        {% block content %}{% endblock %}
-    </body>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <meta
+        http-equiv="X-UA-Compatible"
+        content="IE=edge">
+
+    <title>
+        {% block title %}
+            Windows 95 OS Simulator
+        {% endblock %}
+    </title>
+
+    <!-- Windows 98 CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/98.css">
+
+    <!-- Global Theme -->
+    <link
+        rel="stylesheet"
+        href="{% static 'css/windows95.css' %}">
+
+    <!-- Page-specific CSS -->
+    {% block extra_css %}
+    {% endblock %}
+
+    <!-- Page-specific head scripts (e.g. Chart.js) -->
+    {% block head_scripts %}
+    {% endblock %}
+
+</head>
+
+<body>
+
+    {% block content %}
+    {% endblock %}
+
+    <!-- Global Windows 95 JavaScript -->
+    <script src="{% static 'js/windows95.js' %}"></script>
+
+    <!-- Page-specific JavaScript -->
+    {% block extra_js %}
+    {% endblock %}
+
+</body>
+
 </html>
