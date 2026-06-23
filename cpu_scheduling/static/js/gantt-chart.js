@@ -63,7 +63,8 @@
         },
         options: {
             indexAxis: "y",
-            responsive: false,
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
                 tooltip: {

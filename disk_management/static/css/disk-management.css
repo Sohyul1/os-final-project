@@ -1,12 +1,12 @@
 /* =================================
-   cpu_scheduling/static/css/cpu-scheduling.css
+   disk_management/static/css/disk-management.css
 ================================= */
 
 /* =================================
    Page Layout — sits on the desktop
 ================================= */
 
-.cpu-page {
+.disk-page {
     padding: 12px;
     box-sizing: border-box;
     width: 100%;
@@ -19,15 +19,15 @@
    Main Window
 ================================= */
 
-.cpu-window {
+.disk-window {
     width: 100%;
     max-width: 960px;
     margin: 0 auto;
     box-sizing: border-box;
 }
 
-.cpu-window .title-bar-text::before {
-    content: "🖥️ ";
+.disk-window .title-bar-text::before {
+    content: "💾 ";
 }
 
 
@@ -35,11 +35,11 @@
    Section Windows (Input / Results)
 ================================= */
 
-.cpu-section {
+.disk-section {
     margin-bottom: 12px;
 }
 
-.cpu-section .window-body {
+.disk-section .window-body {
     padding: 12px 14px;
     box-sizing: border-box;
 }
@@ -79,7 +79,26 @@
 }
 
 .field-row-stacked input[type="number"] {
-    max-width: 100px;
+    max-width: 140px;
+}
+
+.field-row-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+}
+
+.field-row-radio-group .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+#direction-field {
+    display: none; /* toggled by disk-management.js */
 }
 
 .form-submit-row {
@@ -88,17 +107,12 @@
     gap: 6px;
 }
 
-#priority-field,
-#quantum-field {
-    display: none; /* toggled by cpu-form.js */
-}
-
 
 /* =================================
    Error Box
 ================================= */
 
-.cpu-error {
+.disk-error {
     display: flex;
     align-items: flex-start;
     gap: 10px;
@@ -112,13 +126,13 @@
     box-sizing: border-box;
 }
 
-.cpu-error .error-icon {
+.disk-error .error-icon {
     font-size: 24px;
     flex-shrink: 0;
     line-height: 1;
 }
 
-.cpu-error .error-text {
+.disk-error .error-text {
     font-size: 11px;
     font-family: "MS Sans Serif", Arial, sans-serif;
     line-height: 1.5;
@@ -126,30 +140,30 @@
 
 
 /* =================================
-   Results — Stats Table
+   Tables — Summary / Step-by-Step
 ================================= */
 
-.stats-table-wrapper {
+.data-table-wrapper {
     width: 100%;
     overflow-x: auto;
     box-sizing: border-box;
+    margin-bottom: 12px;
 }
 
-.stats-table {
+.data-table {
     width: 100%;
-    min-width: 480px; /* scroll horizontally instead of squeezing on tiny screens */
+    min-width: 420px;
     border-collapse: collapse;
     font-family: "MS Sans Serif", Arial, sans-serif;
     font-size: 11px;
-    margin-bottom: 10px;
 }
 
-.stats-table thead tr {
+.data-table thead tr {
     background: #000080;
     color: #ffffff;
 }
 
-.stats-table thead th {
+.data-table thead th {
     padding: 4px 8px;
     text-align: left;
     font-weight: bold;
@@ -157,61 +171,52 @@
     white-space: nowrap;
 }
 
-.stats-table tbody tr {
+.data-table tbody tr {
     background: #ffffff;
 }
 
-.stats-table tbody tr:nth-child(even) {
+.data-table tbody tr:nth-child(even) {
     background: #f0f0f0;
 }
 
-.stats-table tbody td {
+.data-table tbody th {
+    padding: 3px 8px;
+    border: 1px solid #808080;
+    text-align: left;
+    background: #c0c0c0;
+    white-space: nowrap;
+}
+
+.data-table tbody td {
     padding: 3px 8px;
     border: 1px solid #808080;
 }
 
-.stats-table tbody tr:hover {
+.data-table tbody tr:hover {
+    background: #000080;
+    color: #ffffff;
+}
+
+.data-table tbody tr:hover th {
     background: #000080;
     color: #ffffff;
 }
 
 
 /* =================================
-   Results — Averages
+   Disk Head Movement Chart
 ================================= */
 
-.averages-box {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-top: 8px;
-    padding: 8px 10px;
-    background: #c0c0c0;
-    border-top: 2px solid #ffffff;
-    border-left: 2px solid #ffffff;
-    border-right: 2px solid #808080;
-    border-bottom: 2px solid #808080;
-    font-family: "MS Sans Serif", Arial, sans-serif;
+.chart-caption {
     font-size: 11px;
-    box-sizing: border-box;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    margin: 0 0 8px;
 }
 
-.averages-box .avg-item {
-    display: flex;
-    gap: 4px;
-}
-
-.averages-box .avg-label {
-    font-weight: bold;
-}
-
-
-/* =================================
-   Gantt Chart
-================================= */
-
-.gantt-wrapper {
+.disk-chart-wrapper {
+    position: relative;
     width: 100%;
+    height: 320px;
     overflow-x: auto;
     padding: 4px 0;
     background: #ffffff;
@@ -222,10 +227,10 @@
     box-sizing: border-box;
 }
 
-#ganttChart {
+#diskChart {
     display: block;
     width: 100% !important;
-    min-height: 220px;
+    height: 100% !important;
 }
 
 
@@ -235,23 +240,23 @@
 
 @media (max-width: 600px) {
 
-    .cpu-section .window-body {
+    .disk-section .window-body {
         padding: 8px 10px;
     }
 
-    .stats-table {
+    .data-table {
         font-size: 10px;
-        min-width: 420px;
+        min-width: 380px;
     }
 
-    .stats-table thead th,
-    .stats-table tbody td {
+    .data-table thead th,
+    .data-table tbody td,
+    .data-table tbody th {
         padding: 3px 5px;
     }
 
-    .averages-box {
-        flex-direction: column;
-        gap: 6px;
+    .disk-chart-wrapper {
+        height: 260px;
     }
 
 }

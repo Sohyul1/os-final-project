@@ -75,7 +75,7 @@ function clearSelectedIcons() {
 
 
 /* ==============================
-   Start Button — Coming Soon
+   Start Button — Confirm Return to Desktop
 ============================== */
 
 function initializeStartButton() {
@@ -86,7 +86,7 @@ function initializeStartButton() {
 
     // Build the overlay + dialog once and append to body
     const overlay = document.createElement("div");
-    overlay.id = "start-menu-overlay";
+    overlay.id = "start-confirm-overlay";
     overlay.className = "start-menu-overlay";
 
     overlay.innerHTML = `
@@ -94,14 +94,17 @@ function initializeStartButton() {
             <div class="title-bar">
                 <div class="title-bar-text">Windows 95</div>
                 <div class="title-bar-controls">
-                    <button aria-label="Close" id="cs-close-btn"></button>
+                    <button aria-label="Close" id="start-confirm-close-btn"></button>
                 </div>
             </div>
             <div class="window-body coming-soon-body">
-                <div class="cs-icon">🚧</div>
-                <h2>Coming Soon!</h2>
-                <p>This feature is currently under construction.<br>Check back later!</p>
-                <button class="cs-ok-btn" id="cs-ok-btn">OK</button>
+                <div class="cs-icon">🖥️</div>
+                <h2>Return to Desktop?</h2>
+                <p>Any unsaved progress in this window<br>will be lost. Continue?</p>
+                <div class="start-confirm-actions">
+                    <button class="cs-ok-btn" id="start-confirm-yes-btn">Yes</button>
+                    <button class="cs-ok-btn" id="start-confirm-no-btn">No</button>
+                </div>
             </div>
         </div>
     `;
@@ -124,8 +127,12 @@ function initializeStartButton() {
         isOpen ? closeDialog() : openDialog();
     });
 
-    document.getElementById("cs-close-btn").addEventListener("click", closeDialog);
-    document.getElementById("cs-ok-btn").addEventListener("click", closeDialog);
+    document.getElementById("start-confirm-close-btn").addEventListener("click", closeDialog);
+    document.getElementById("start-confirm-no-btn").addEventListener("click", closeDialog);
+
+    document.getElementById("start-confirm-yes-btn").addEventListener("click", function () {
+        window.location.href = "/";
+    });
 
     // Close when clicking outside the dialog
     overlay.addEventListener("click", function (event) {

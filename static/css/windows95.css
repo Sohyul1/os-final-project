@@ -5,11 +5,18 @@
 body {
     margin: 0;
     background: #008080;
-    min-height: 100vh;
-    overflow: clip;
-    padding-bottom: 30px;
     font-family: "MS Sans Serif", Arial, sans-serif;
     font-size: 11px;
+    height: 100vh;
+    overflow: hidden; /* body itself never scrolls — taskbar always stays put */
+}
+
+/* Scrollable area for all page content, sized above the taskbar */
+.page-content {
+    height: calc(100vh - 30px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 
@@ -96,6 +103,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 320px;
+    max-width: calc(100vw - 24px);
     z-index: 10001;
 }
 
@@ -130,6 +138,12 @@ body {
 
 .coming-soon-body .cs-ok-btn {
     min-width: 80px;
+}
+
+.start-confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
 }
 
 
@@ -170,6 +184,16 @@ body {
     font-size: 11px;
     flex-shrink: 0;
     padding: 0 6px !important;
+    text-decoration: none;
+    color: inherit;
+    cursor: default;
+}
+
+.start-button:visited,
+.start-button:hover,
+.start-button:active {
+    color: inherit;
+    text-decoration: none;
 }
 
 .start-button .win-logo {
@@ -186,12 +210,13 @@ body {
     flex: 1;
     overflow: hidden;
     height: 22px;
+    min-width: 0;
 }
 
 .taskbar-app-btn {
     height: 22px;
-    min-width: 100px;
-    max-width: 160px;
+    min-width: 60px;
+    max-width: 130px;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -207,6 +232,7 @@ body {
     border-right: 2px solid #808080;
     border-bottom: 2px solid #808080;
     cursor: default;
+    flex-shrink: 1;
 }
 
 .taskbar-app-btn:active,
@@ -223,6 +249,12 @@ body {
     height: 14px;
     image-rendering: pixelated;
     flex-shrink: 0;
+}
+
+.taskbar-app-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .taskbar-right {
@@ -248,4 +280,28 @@ body {
     border-bottom: 2px solid #ffffff;
     box-sizing: border-box;
     white-space: nowrap;
+}
+
+/* =================================
+   Responsive — small screens / mobile
+================================= */
+
+@media (max-width: 480px) {
+
+    .start-button {
+        min-width: 0;
+        padding: 0 8px !important;
+    }
+
+    .taskbar-app-btn {
+        min-width: 0;
+        max-width: 90px;
+        font-size: 10px;
+    }
+
+    .taskbar-clock {
+        padding: 0 6px;
+        font-size: 10px;
+    }
+
 }

@@ -1,232 +1,205 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Virtual Memory{% endblock %}
+
+{% block body_class %}has-app{% endblock %}
+
 {% block head_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/virtual-memory.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Virtual Memory — Page Replacement Simulator</h2>
+<div class="vm-page">
+<div class="vm-window window">
 
-<h2>Input</h2>
-<form method="POST">
-    {% csrf_token %}
+    <!-- Title Bar -->
+    <div class="title-bar">
+        <div class="title-bar-text">Virtual Memory — Page Replacement Simulator</div>
+        <div class="title-bar-controls">
+            <button aria-label="Minimize" id="vm-minimize"></button>
+            <button aria-label="Maximize" id="vm-maximize"></button>
+            <button aria-label="Close" onclick="window.location.href='/'"></button>
+        </div>
+    </div>
 
-    <label for="algorithm">Algorithm:</label><br />
-    <select name="algorithm" id="algorithm">
-        {% for key, label in algorithms.items %}
-        <option
-            value="{{ key }}"
-            {%
-            if
-            form.algorithm=""
-            ="key"
-            %}selected{%
-            endif
-            %}
-        >
-            {{ label }}
-        </option>
-        {% endfor %}
-    </select>
-    <br /><br />
+    <div class="window-body">
 
-    <label
-        >Page Reference String (space or comma separated, e.g. 7 0 1 2 0 3 0 4 2
-        3 0 3 2):</label
-    ><br />
-    <input
-        type="text"
-        name="page_string"
-        value="{{ form.page_string|default:'7 0 1 2 0 3 0 4 2 3 0 3 2' }}"
-        size="60"
-    />
-    <br /><br />
+        <!-- ── INPUT SECTION ───────────────────────────── -->
+        <div class="vm-section window">
+            <div class="title-bar">
+                <div class="title-bar-text">Input</div>
+            </div>
+            <div class="window-body">
+                <form method="POST">
+                    {% csrf_token %}
 
-    <label>Number of Frames:</label><br />
-    <input
-        type="number"
-        name="num_frames"
-        value="{{ form.num_frames|default:3 }}"
-        min="1"
-        max="20"
-    />
-    <br /><br />
+                    <div class="field-row-stacked">
+                        <label for="algorithm">Algorithm:</label>
+                        <select name="algorithm" id="algorithm">
+                            {% for key, label in algorithms.items %}
+                            <option value="{{ key }}" {% if form.algorithm == key %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-    <input type="submit" value="Run Algorithm" />
-</form>
+                    <div class="field-row-stacked">
+                        <label>Page Reference String (space or comma separated, e.g. 7 0 1 2 0 3 0 4 2 3 0 3 2):</label>
+                        <input type="text" name="page_string" value="{{ form.page_string|default:'7 0 1 2 0 3 0 4 2 3 0 3 2' }}" />
+                    </div>
 
-<hr />
+                    <div class="field-row-stacked">
+                        <label>Number of Frames:</label>
+                        <input type="number" name="num_frames" value="{{ form.num_frames|default:3 }}" min="1" max="20" />
+                    </div>
 
-{% if error %}
-<p><strong>Error:</strong> {{ error }}</p>
-{% endif %} {% if result %}
-<h2>Results: {{ result.algo_name }}</h2>
+                    <div class="form-submit-row">
+                        <button type="submit">▶ Run Algorithm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-<!-- ── SUMMARY STATS ──────────────────────────────────── -->
-<table border="1" cellpadding="5">
-    <tr>
-        <th>Total References</th>
-        <td>{{ result.page_string|length }}</td>
-    </tr>
-    <tr>
-        <th>Number of Frames</th>
-        <td>{{ result.num_frames }}</td>
-    </tr>
-    <tr>
-        <th>Total Page Faults</th>
-        <td>{{ result.total_faults }}</td>
-    </tr>
-    <tr>
-        <th>Total Page Hits</th>
-        <td>{{ result.total_hits }}</td>
-    </tr>
-    <tr>
-        <th>Page Fault Rate</th>
-        <td>{{ result.fault_rate }}%</td>
-    </tr>
-</table>
-<br />
+        <!-- ── ERROR ───────────────────────────────────── -->
+        {% if error %}
+        <div class="vm-error">
+            <div class="error-icon">⚠️</div>
+            <div class="error-text"><strong>Error:</strong> {{ error }}</div>
+        </div>
+        {% endif %}
 
-<!-- ── PAGE FAULT TRACE TABLE ────────────────────────── -->
-<h3>Page Fault Trace</h3>
-<table border="1" cellpadding="5">
-    <thead>
-        <tr>
-            <th>Step</th>
-            <th>Page</th>
-            {% for i in result.trace.0.frames %}
-            <th>Frame {{ forloop.counter }}</th>
-            {% endfor %}
-            <th>Result</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in result.trace %}
-        <tr>
-            <td>{{ row.step }}</td>
-            <td><strong>{{ row.page }}</strong></td>
-            {% for f in row.frames %}
-            <td>{{ f }}</td>
-            {% endfor %}
-            <td>
-                {% if row.page_fault %}
-                <strong>FAULT</strong>
-                {% else %} Hit {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <!-- ── RESULTS SECTION ─────────────────────────── -->
+        {% if result %}
+        <div class="vm-section window">
+            <div class="title-bar">
+                <div class="title-bar-text">Results — {{ result.algo_name }}</div>
+            </div>
+            <div class="window-body">
 
-<!-- ── CHART DATA (hidden, read by JS) ───────────────── -->
-<div
-    id="chart-data"
-    data-steps="{{ result.chart_steps_json }}"
-    data-faults="{{ result.chart_faults_json }}"
-    data-summary="{{ result.chart_summary_json }}"
-    style="display: none"
-></div>
+                <!-- Summary Stats -->
+                <div class="vm-section window">
+                    <div class="title-bar">
+                        <div class="title-bar-text">Summary</div>
+                    </div>
+                    <div class="window-body">
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <tbody>
+                                    <tr><th>Total References</th><td>{{ result.page_string|length }}</td></tr>
+                                    <tr><th>Number of Frames</th><td>{{ result.num_frames }}</td></tr>
+                                    <tr><th>Total Page Faults</th><td>{{ result.total_faults }}</td></tr>
+                                    <tr><th>Total Page Hits</th><td>{{ result.total_hits }}</td></tr>
+                                    <tr><th>Page Fault Rate</th><td>{{ result.fault_rate }}%</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-<!-- ── CUMULATIVE PAGE FAULTS LINE CHART ─────────────── -->
-<h3>Cumulative Page Faults Over Time</h3>
-<canvas id="faultLineChart" width="900" height="250"></canvas>
+                <!-- Page Fault Trace -->
+                <div class="vm-section window">
+                    <div class="title-bar">
+                        <div class="title-bar-text">Page Fault Trace</div>
+                    </div>
+                    <div class="window-body">
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Step</th>
+                                        <th>Page</th>
+                                        {% for i in result.trace.0.frames %}
+                                        <th>Frame {{ forloop.counter }}</th>
+                                        {% endfor %}
+                                        <th>Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in result.trace %}
+                                    <tr>
+                                        <td>{{ row.step }}</td>
+                                        <td><strong>{{ row.page }}</strong></td>
+                                        {% for f in row.frames %}
+                                        <td>{{ f }}</td>
+                                        {% endfor %}
+                                        <td>
+                                            {% if row.page_fault %}
+                                            <span class="fault-text">FAULT</span>
+                                            {% else %}
+                                            Hit
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
 
-<!-- ── FAULT vs HIT BAR CHART ────────────────────────── -->
-<h3>Page Faults vs Page Hits</h3>
-<canvas id="summaryBarChart" width="400" height="250"></canvas>
+                <!-- Hidden chart data -->
+                <div
+                    id="chart-data"
+                    data-steps="{{ result.chart_steps_json }}"
+                    data-faults="{{ result.chart_faults_json }}"
+                    data-summary="{{ result.chart_summary_json }}"
+                    style="display:none"
+                ></div>
 
+                <!-- Cumulative Page Faults Line Chart -->
+                <div class="vm-section window">
+                    <div class="title-bar">
+                        <div class="title-bar-text">Cumulative Page Faults Over Time</div>
+                    </div>
+                    <div class="window-body">
+                        <div class="vm-chart-wrapper">
+                            <canvas id="faultLineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fault vs Hit Bar Chart -->
+                <div class="vm-section window">
+                    <div class="title-bar">
+                        <div class="title-bar-text">Page Faults vs Page Hits</div>
+                    </div>
+                    <div class="window-body">
+                        <div class="vm-chart-wrapper bar-chart">
+                            <canvas id="summaryBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endif %}
+
+    </div><!-- /window-body -->
+</div><!-- /vm-window -->
+</div><!-- /vm-page -->
+{% endblock %}
+
+{% block taskbar_register %}
 <script>
-    (function () {
-        var el = document.getElementById("chart-data");
-        var steps = JSON.parse(el.getAttribute("data-steps"));
-        var faults = JSON.parse(el.getAttribute("data-faults"));
-        var summary = JSON.parse(el.getAttribute("data-summary"));
-
-        // ── Line chart: cumulative faults ──────────────────────
-        new Chart(document.getElementById("faultLineChart"), {
-            type: "line",
-            data: {
-                labels: steps,
-                datasets: [
-                    {
-                        label: "Cumulative Page Faults",
-                        data: faults,
-                        borderColor: "#e15759",
-                        backgroundColor: "rgba(225, 87, 89, 0.1)",
-                        borderWidth: 2,
-                        pointRadius: 4,
-                        pointBackgroundColor: "#e15759",
-                        fill: true,
-                        tension: 0.1,
-                    },
-                ],
-            },
-            options: {
-                responsive: false,
-                plugins: {
-                    legend: { display: true },
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                return "Faults so far: " + ctx.parsed.y;
-                            },
-                        },
-                    },
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: "Step (Page Reference)",
-                        },
-                        ticks: {
-                            callback: function (val, i) {
-                                return "Step " + steps[i];
-                            },
-                        },
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: "Cumulative Faults",
-                        },
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 },
-                    },
-                },
-            },
-        });
-
-        // ── Bar chart: faults vs hits ───────────────────────────
-        new Chart(document.getElementById("summaryBarChart"), {
-            type: "bar",
-            data: {
-                labels: summary.labels,
-                datasets: [
-                    {
-                        label: "Count",
-                        data: summary.data,
-                        backgroundColor: summary.colors,
-                        borderColor: "#333",
-                        borderWidth: 1,
-                    },
-                ],
-            },
-            options: {
-                responsive: false,
-                plugins: {
-                    legend: { display: false },
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1 },
-                        title: { display: true, text: "Count" },
-                    },
-                },
-            },
-        });
-    })();
+    addTaskbarApp(
+        "virtual-memory",
+        "Virtual Memory",
+        "{% static 'images/virtual.png' %}",
+        function () {
+            document.querySelector(".vm-window").scrollIntoView({ behavior: "smooth" });
+        }
+    );
+    setActiveTaskbarApp("virtual-memory");
 </script>
+{% endblock %}
 
+{% block extra_js %}
+{% if result %}
+<script src="{% static 'js/virtual-memory.js' %}"></script>
 {% endif %}
 {% endblock %}

@@ -2,6 +2,8 @@
 {% load static %}
 {% block title %}CPU Scheduling{% endblock %}
 
+{% block body_class %}has-app{% endblock %}
+
 {% block head_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
@@ -18,9 +20,9 @@
     <div class="title-bar">
         <div class="title-bar-text">CPU Scheduling Simulator</div>
         <div class="title-bar-controls">
-            <button aria-label="Minimize"></button>
-            <button aria-label="Maximize"></button>
-            <button aria-label="Close"></button>
+            <button aria-label="Minimize" id="cpu-minimize"></button>
+            <button aria-label="Maximize" id="cpu-maximize"></button>
+            <button aria-label="Close" onclick="window.location.href='/'"></button>
         </div>
     </div>
 
@@ -37,7 +39,7 @@
 
                     <div class="field-row-stacked">
                         <label for="algorithm">Algorithm:</label>
-                        <select name="algorithm" id="algorithm" onchange="toggleFields()">
+                        <select name="algorithm" id="algorithm">
                             {% for key, label in algorithms.items %}
                             <option value="{{ key }}" {% if form.algorithm == key %}selected{% endif %}>
                                 {{ label }}
@@ -100,32 +102,34 @@
                         <div class="title-bar-text">Per-Process Statistics</div>
                     </div>
                     <div class="window-body">
-                        <table class="stats-table">
-                            <thead>
-                                <tr>
-                                    <th>PID</th>
-                                    <th>Arrival</th>
-                                    <th>Burst</th>
-                                    <th>Finish</th>
-                                    <th>Turnaround</th>
-                                    <th>Waiting</th>
-                                    <th>Response</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for s in result.stats %}
-                                <tr>
-                                    <td>{{ s.pid }}</td>
-                                    <td>{{ s.arrival }}</td>
-                                    <td>{{ s.burst }}</td>
-                                    <td>{{ s.finish }}</td>
-                                    <td>{{ s.turnaround }}</td>
-                                    <td>{{ s.waiting }}</td>
-                                    <td>{{ s.response }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        <div class="stats-table-wrapper">
+                            <table class="stats-table">
+                                <thead>
+                                    <tr>
+                                        <th>PID</th>
+                                        <th>Arrival</th>
+                                        <th>Burst</th>
+                                        <th>Finish</th>
+                                        <th>Turnaround</th>
+                                        <th>Waiting</th>
+                                        <th>Response</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for s in result.stats %}
+                                    <tr>
+                                        <td>{{ s.pid }}</td>
+                                        <td>{{ s.arrival }}</td>
+                                        <td>{{ s.burst }}</td>
+                                        <td>{{ s.finish }}</td>
+                                        <td>{{ s.turnaround }}</td>
+                                        <td>{{ s.waiting }}</td>
+                                        <td>{{ s.response }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
 
                         <div class="averages-box">
                             <div class="avg-item">
@@ -157,7 +161,7 @@
                             style="display:none"
                         ></div>
                         <div class="gantt-wrapper">
-                            <canvas id="ganttChart" width="900" height="200"></canvas>
+                            <canvas id="ganttChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -169,6 +173,20 @@
     </div><!-- /window-body -->
 </div><!-- /cpu-window -->
 </div><!-- /cpu-page -->
+{% endblock %}
+
+{% block taskbar_register %}
+<script>
+    addTaskbarApp(
+        "cpu-scheduling",
+        "CPU Scheduling",
+        "{% static 'images/cpu.png' %}",
+        function () {
+            document.querySelector(".cpu-window").scrollIntoView({ behavior: "smooth" });
+        }
+    );
+    setActiveTaskbarApp("cpu-scheduling");
+</script>
 {% endblock %}
 
 {% block extra_js %}
