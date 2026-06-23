@@ -1,0 +1,251 @@
+/* =================================
+   memory_management/static/css/memory-management.css
+================================= */
+
+/* =================================
+   Page Layout — sits on the desktop
+================================= */
+
+.mem-page {
+    padding: 12px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+
+/* =================================
+   Main Window
+================================= */
+
+.mem-window {
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.mem-window .title-bar-text::before {
+    content: "🧠 ";
+}
+
+
+/* =================================
+   Section Windows (Input / Results)
+================================= */
+
+.mem-section {
+    margin-bottom: 12px;
+}
+
+.mem-section .window-body {
+    padding: 12px 14px;
+    box-sizing: border-box;
+}
+
+
+/* =================================
+   Form Fields
+================================= */
+
+.field-row-stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 10px;
+}
+
+.field-row-stacked label {
+    font-size: 11px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+}
+
+.field-row-stacked input[type="text"],
+.field-row-stacked select {
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    font-size: 11px;
+    padding: 2px 4px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    outline: none;
+}
+
+.field-row-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+}
+
+.form-submit-row {
+    margin-top: 14px;
+    display: flex;
+    gap: 6px;
+}
+
+
+/* =================================
+   Error Box
+================================= */
+
+.mem-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background: #c0c0c0;
+    border-top: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    box-sizing: border-box;
+}
+
+.mem-error .error-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+.mem-error .error-text {
+    font-size: 11px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    line-height: 1.5;
+}
+
+
+/* =================================
+   Tables — Overview / Allocation / Segments
+================================= */
+
+.data-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+.data-table {
+    width: 100%;
+    min-width: 420px;
+    border-collapse: collapse;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    font-size: 11px;
+}
+
+.data-table thead tr {
+    background: #000080;
+    color: #ffffff;
+}
+
+.data-table thead th {
+    padding: 4px 8px;
+    text-align: left;
+    font-weight: bold;
+    border: 1px solid #000080;
+    white-space: nowrap;
+}
+
+.data-table tbody tr {
+    background: #ffffff;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background: #f0f0f0;
+}
+
+.data-table tbody th {
+    padding: 3px 8px;
+    border: 1px solid #808080;
+    text-align: left;
+    background: #c0c0c0;
+    white-space: nowrap;
+}
+
+.data-table tbody td {
+    padding: 3px 8px;
+    border: 1px solid #808080;
+}
+
+.data-table tbody tr:hover {
+    background: #000080;
+    color: #ffffff;
+}
+
+.data-table tbody tr:hover th {
+    background: #000080;
+    color: #ffffff;
+}
+
+.unallocated-note {
+    padding: 8px 10px;
+    margin-bottom: 12px;
+    background: #c0c0c0;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    font-size: 11px;
+    font-family: "MS Sans Serif", Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+
+/* =================================
+   Memory Block Diagram (Chart)
+================================= */
+
+.mem-chart-wrapper {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    overflow-x: auto;
+    padding: 4px 0;
+    background: #ffffff;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+#memoryChart {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+
+/* =================================
+   Responsive — small screens / mobile
+================================= */
+
+@media (max-width: 600px) {
+
+    .mem-section .window-body {
+        padding: 8px 10px;
+    }
+
+    .data-table {
+        font-size: 10px;
+        min-width: 380px;
+    }
+
+    .data-table thead th,
+    .data-table tbody td,
+    .data-table tbody th {
+        padding: 3px 5px;
+    }
+
+}
