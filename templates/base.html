@@ -21,6 +21,7 @@
         {% endblock %}
     </title>
 
+        
     <!-- Windows 98 CSS -->
     <link
         rel="stylesheet"
@@ -43,6 +44,12 @@
 
 <body class="{% block body_class %}{% endblock %}">
 
+     <!-- STARTUP OVERLAY -->
+    <div id="startup-overlay">
+      <img src="{% static 'images/win95_boot.png' %}" alt="Windows 95">
+      <p id="startup-hint">Press <kbd>Enter</kbd> to continue</p>
+    </div>
+
     <div class="page-content">
         {% block content %}
         {% endblock %}
@@ -55,7 +62,7 @@
 
             <!-- Start Button — confirms before returning to the desktop -->
             <button id="start-button" class="start-button" type="button">
-                <img src="{% static 'images/win95-logo.png' %}" alt="" class="win-logo">
+                <img src="{% static 'images/start_windows.png' %}" alt="" class="win-logo">
                 Start
             </button>
 

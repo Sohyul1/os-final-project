@@ -98,7 +98,6 @@ function initializeStartButton() {
                 </div>
             </div>
             <div class="window-body coming-soon-body">
-                <div class="cs-icon">🖥️</div>
                 <h2>Return to Desktop?</h2>
                 <p>Any unsaved progress in this window<br>will be lost. Continue?</p>
                 <div class="start-confirm-actions">
@@ -231,3 +230,45 @@ function removeTaskbarApp(id) {
     if (btn) btn.remove();
 
 }
+
+/* ═══════════════════════════════
+   STARTUP SCREEN LOGIC
+   ═══════════════════════════════ */
+(function () {
+  const overlay = document.getElementById('startup-overlay');
+  if (!overlay) return;
+
+    if (sessionStorage.getItem('win95_booted')) {
+    return;
+  }
+
+  overlay.style.display = 'flex';
+
+  let dismissed = false;
+
+  function dismiss() {
+    if (dismissed) return;
+    dismissed = true;
+
+    sessionStorage.setItem('win95_booted', '1');
+
+    // Play startup chime
+    const audio = new Audio('https://www.myinstants.com/media/sounds/windows-95-startup.mp3');
+    audio.volume = 0.6;
+    audio.play().catch(() => {});
+
+    // Fade out overlay
+    overlay.classList.add('hide');
+    setTimeout(() => overlay.remove(), 900);
+  }
+
+  // Wait for DOM to be ready before attaching listener
+  document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') dismiss();
+    });
+    document.addEventListener('mousedown', function (e) {
+      if (e.button === 0) dismiss();
+    });
+  });
+})();
