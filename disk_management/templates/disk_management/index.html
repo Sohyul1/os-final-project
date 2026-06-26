@@ -1,254 +1,213 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Disk Management{% endblock %}
+
+{% block body_class %}has-app{% endblock %}
+
 {% block head_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/disk-management.css' %}">
+{% endblock %}
+
 {% block content %}
-<h2>Disk Management Simulator</h2>
+<div class="disk-page">
+<div class="disk-window window">
 
-<h2>Input</h2>
-<form method="POST">
-    {% csrf_token %}
-
-    <label for="algorithm">Algorithm:</label><br />
-    <select name="algorithm" id="algorithm" onchange="toggleDirection()">
-        {% for key, label in algorithms.items %}
-        <option
-            value="{{ key }}"
-            {%
-            if
-            form.algorithm=""
-            ="key"
-            %}selected{%
-            endif
-            %}
-        >
-            {{ label }}
-        </option>
-        {% endfor %}
-    </select>
-    <br /><br />
-
-    <label
-        >Disk Request Queue (space or comma separated, e.g. 98 183 37 122 14 124
-        65 67):</label
-    ><br />
-    <input
-        type="text"
-        name="requests"
-        value="{{ form.requests|default:'98 183 37 122 14 124 65 67' }}"
-        size="60"
-    />
-    <br /><br />
-
-    <label>Initial Head Position:</label><br />
-    <input
-        type="number"
-        name="initial_head"
-        value="{{ form.initial_head|default:53 }}"
-        min="0"
-    />
-    <br /><br />
-
-    <label>Disk Size (number of cylinders, e.g. 200):</label><br />
-    <input
-        type="number"
-        name="disk_size"
-        value="{{ form.disk_size|default:200 }}"
-        min="2"
-    />
-    <br /><br />
-
-    <div id="direction-field">
-        <label>Initial Direction (for SCAN and LOOK):</label><br />
-        <label>
-            <input
-                type="radio"
-                name="direction"
-                value="right"
-                {%
-                if
-                form.direction
-                !="left"
-                %}checked{%
-                endif
-                %}
-            />
-            Right (towards higher cylinders)
-        </label>
-        <br />
-        <label>
-            <input
-                type="radio"
-                name="direction"
-                value="left"
-                {%
-                if
-                form.direction=""
-                ="left"
-                %}checked{%
-                endif
-                %}
-            />
-            Left (towards lower cylinders)
-        </label>
-        <br /><br />
+    <!-- Title Bar -->
+    <div class="title-bar">
+        <div class="title-bar-text">Disk Management Simulator</div>
+        <div class="title-bar-controls">
+            <button aria-label="Minimize" id="disk-minimize"></button>
+            <button aria-label="Maximize" id="disk-maximize"></button>
+            <button aria-label="Close" onclick="window.location.href='/'"></button>
+        </div>
     </div>
 
-    <input type="submit" value="Run Algorithm" />
-</form>
+    <div class="window-body">
 
+        <!-- ── INPUT SECTION ───────────────────────────── -->
+        <div class="disk-section window">
+            <div class="title-bar">
+                <div class="title-bar-text">Input</div>
+            </div>
+            <div class="window-body">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <div class="field-row-stacked">
+                        <label for="algorithm">Algorithm:</label>
+                        <select name="algorithm" id="algorithm">
+                            {% for key, label in algorithms.items %}
+                            <option value="{{ key }}" {% if form.algorithm == key %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="field-row-stacked">
+                        <label>Disk Request Queue (space or comma separated, e.g. 98 183 37 122 14 124 65 67):</label>
+                        <input type="text" name="requests" value="{{ form.requests|default:'98 183 37 122 14 124 65 67' }}" />
+                    </div>
+
+                    <div class="field-row-stacked">
+                        <label>Initial Head Position:</label>
+                        <input type="number" name="initial_head" value="{{ form.initial_head|default:53 }}" min="0" />
+                    </div>
+
+                    <div class="field-row-stacked">
+                        <label>Disk Size (number of cylinders, e.g. 200):</label>
+                        <input type="number" name="disk_size" value="{{ form.disk_size|default:200 }}" min="2" />
+                    </div>
+
+                    <div id="direction-field" class="field-row-radio-group">
+                        <label>Initial Direction (for SCAN and LOOK):</label>
+                        <div class="radio-option">
+                            <input
+                                type="radio"
+                                name="direction"
+                                id="direction-right"
+                                value="right"
+                                {% if form.direction != "left" %}checked{% endif %}
+                            />
+                            <label for="direction-right">Right (towards higher cylinders)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input
+                                type="radio"
+                                name="direction"
+                                id="direction-left"
+                                value="left"
+                                {% if form.direction == "left" %}checked{% endif %}
+                            />
+                            <label for="direction-left">Left (towards lower cylinders)</label>
+                        </div>
+                    </div>
+
+                    <div class="form-submit-row">
+                        <button type="submit">▶ Run Algorithm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── ERROR ───────────────────────────────────── -->
+        {% if error %}
+        <div class="disk-error">
+            <div class="error-icon">⚠️</div>
+            <div class="error-text"><strong>Error:</strong> {{ error }}</div>
+        </div>
+        {% endif %}
+
+        <!-- ── RESULTS SECTION ─────────────────────────── -->
+        {% if result %}
+        <div class="disk-section window">
+            <div class="title-bar">
+                <div class="title-bar-text">Results — {{ result.algo_name }}</div>
+            </div>
+            <div class="window-body">
+
+                <!-- Summary Stats -->
+                <div class="disk-section window">
+                    <div class="title-bar">
+                        <div class="title-bar-text">Summary</div>
+                    </div>
+                    <div class="window-body">
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <tbody>
+                                    <tr><th>Initial Head Position</th><td>{{ result.initial_head }}</td></tr>
+                                    <tr><th>Disk Size</th><td>{{ result.disk_size }} cylinders</td></tr>
+                                    <tr><th>Service Order</th><td>{{ result.sequence|join:" → " }}</td></tr>
+                                    <tr><th>Total Seek Distance</th><td>{{ result.total_seek }} cylinders</td></tr>
+                                    <tr><th>Average Seek Distance</th><td>{{ result.avg_seek }} cylinders</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step Table -->
+                <div class="disk-section window">
+                    <div class="title-bar">
+                        <div class="title-bar-text">Step-by-Step Seek Operations</div>
+                    </div>
+                    <div class="window-body">
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Step</th>
+                                        <th>From</th>
+                                        <th>To</th>
+                                        <th>Seek Distance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for step in result.steps %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ step.from }}</td>
+                                        <td>{{ step.to }}</td>
+                                        <td>{{ step.distance }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td colspan="3"><strong>Total</strong></td>
+                                        <td><strong>{{ result.total_seek }}</strong></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disk Head Movement Chart -->
+                <div class="disk-section window">
+                    <div class="title-bar">
+                        <div class="title-bar-text">Disk Head Movement</div>
+                    </div>
+                    <div class="window-body">
+                        <p class="chart-caption">X-axis = order of service&nbsp;|&nbsp;Y-axis = cylinder number</p>
+
+                        <div
+                            id="disk-chart-data"
+                            data-chart="{{ result.chart_data_json }}"
+                            style="display:none"
+                        ></div>
+
+                        <div class="disk-chart-wrapper">
+                            <canvas id="diskChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% endif %}
+
+    </div><!-- /window-body -->
+</div><!-- /disk-window -->
+</div><!-- /disk-page -->
+{% endblock %}
+
+{% block taskbar_register %}
 <script>
-    function toggleDirection() {
-        var algo = document.getElementById("algorithm").value;
-        var needsDir = ["scan", "look"];
-        document.getElementById("direction-field").style.display =
-            needsDir.indexOf(algo) !== -1 ? "block" : "none";
-    }
-    toggleDirection();
+    addTaskbarApp(
+        "disk-management",
+        "Disk Management",
+        "{% static 'images/disk.png' %}",
+        function () {
+            document.querySelector(".disk-window").scrollIntoView({ behavior: "smooth" });
+        }
+    );
+    setActiveTaskbarApp("disk-management");
 </script>
+{% endblock %}
 
-<hr />
-
-{% if error %}
-<p><strong>Error:</strong> {{ error }}</p>
-{% endif %} {% if result %}
-<h2>Results: {{ result.algo_name }}</h2>
-
-<!-- ── SUMMARY STATS ──────────────────────────────────── -->
-<table border="1" cellpadding="5">
-    <tr>
-        <th>Initial Head Position</th>
-        <td>{{ result.initial_head }}</td>
-    </tr>
-    <tr>
-        <th>Disk Size</th>
-        <td>{{ result.disk_size }} cylinders</td>
-    </tr>
-    <tr>
-        <th>Service Order</th>
-        <td>{{ result.sequence|join:" → " }}</td>
-    </tr>
-    <tr>
-        <th>Total Seek Distance</th>
-        <td>{{ result.total_seek }} cylinders</td>
-    </tr>
-    <tr>
-        <th>Average Seek Distance</th>
-        <td>{{ result.avg_seek }} cylinders</td>
-    </tr>
-</table>
-<br />
-
-<!-- ── STEP BY STEP TABLE ────────────────────────────── -->
-<h3>Step-by-Step Seek Operations</h3>
-<table border="1" cellpadding="5">
-    <thead>
-        <tr>
-            <th>Step</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Seek Distance</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for step in result.steps %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ step.from }}</td>
-            <td>{{ step.to }}</td>
-            <td>{{ step.distance }}</td>
-        </tr>
-        {% endfor %}
-        <tr>
-            <td colspan="3"><strong>Total</strong></td>
-            <td><strong>{{ result.total_seek }}</strong></td>
-        </tr>
-    </tbody>
-</table>
-
-<!-- ── CHART DATA (hidden, read by JS) ───────────────── -->
-<div
-    id="disk-chart-data"
-    data-chart="{{ result.chart_data_json }}"
-    style="display: none"
-></div>
-
-<!-- ── DISK HEAD MOVEMENT CHART ──────────────────────── -->
-<h3>Disk Head Movement</h3>
-<p>X-axis = order of service &nbsp;|&nbsp; Y-axis = cylinder number</p>
-<canvas id="diskChart" width="900" height="350"></canvas>
-
-<script>
-    (function () {
-        var el = document.getElementById("disk-chart-data");
-        var chartData = JSON.parse(el.getAttribute("data-chart"));
-
-        var sequence = chartData.sequence;
-        var labels = sequence.map(function (_, i) {
-            return "Step " + i;
-        });
-
-        // Mark the initial head position point differently
-        var pointColors = sequence.map(function (_, i) {
-            return i === 0 ? "#e15759" : "#4e79a7";
-        });
-        var pointSizes = sequence.map(function (_, i) {
-            return i === 0 ? 8 : 5;
-        });
-
-        new Chart(document.getElementById("diskChart"), {
-            type: "line",
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: "Disk Head Position",
-                        data: sequence,
-                        borderColor: "#4e79a7",
-                        backgroundColor: "rgba(78, 121, 167, 0.05)",
-                        borderWidth: 2,
-                        pointBackgroundColor: pointColors,
-                        pointRadius: pointSizes,
-                        pointBorderColor: "#333",
-                        pointBorderWidth: 1,
-                        fill: false,
-                        tension: 0, // straight lines between points
-                    },
-                ],
-            },
-            options: {
-                responsive: false,
-                plugins: {
-                    legend: { display: true },
-                    tooltip: {
-                        callbacks: {
-                            label: function (ctx) {
-                                var label =
-                                    ctx.dataIndex === 0
-                                        ? "Initial Head: " + ctx.parsed.y
-                                        : "Cylinder: " + ctx.parsed.y;
-                                return label;
-                            },
-                        },
-                    },
-                },
-                scales: {
-                    x: {
-                        title: { display: true, text: "Service Order" },
-                    },
-                    y: {
-                        title: {
-                            display: true,
-                            text: "Cylinder Number",
-                        },
-                        beginAtZero: true,
-                    },
-                },
-            },
-        });
-    })();
-</script>
-
-{% endif %} 
+{% block extra_js %}
+<script src="{% static 'js/disk-management.js' %}"></script>
 {% endblock %}
